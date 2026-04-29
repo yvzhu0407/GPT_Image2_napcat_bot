@@ -1,0 +1,7 @@
+name: gpt_image2_napcat_bot
+desc: AstrBot 画图插件，仅响应以 #画图 开头的消息
+description: AstrBot 画图插件，仅响应以 #画图 开头的消息
+version: 1.0.0
+author: yvzhu
+repo: ""
+display_name: GPT Image2 画图

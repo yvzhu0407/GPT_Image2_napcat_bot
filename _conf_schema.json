@@ -1,0 +1,42 @@
+{
+  "openai_api_key": {
+    "type": "string",
+    "description": "OpenAI 兼容接口的 API Key",
+    "obvious_hint": true
+  },
+  "openai_base_url": {
+    "type": "string",
+    "description": "OpenAI 兼容接口基础地址",
+    "default": "http://127.0.0.1:8317/v1"
+  },
+  "image_model": {
+    "type": "string",
+    "description": "图像模型名称",
+    "default": "gpt-image-2"
+  },
+  "image_quality": {
+    "type": "string",
+    "description": "图像质量",
+    "default": "high"
+  },
+  "image_format": {
+    "type": "string",
+    "description": "输出图片格式，仅用作保存文件扩展名",
+    "default": "png"
+  },
+  "image_background": {
+    "type": "string",
+    "description": "图像背景参数",
+    "default": "opaque"
+  },
+  "output_dir": {
+    "type": "string",
+    "description": "生成图片保存目录，相对路径会基于 AstrBot 运行目录",
+    "default": "data/gpt-image2-output"
+  },
+  "request_timeout": {
+    "type": "int",
+    "description": "图像请求超时时间（秒）",
+    "default": 600
+  }
+}
