@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node *)",
+      "WebSearch",
+      "WebFetch(domain:napneko.icu)",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:www.napcat.wiki)",
+      "WebFetch(domain:napneko.github.io)",
+      "Bash(python *)"
+    ]
+  }
+}

@@ -4,9 +4,7 @@
 
 当前支持：
 
-- `@机器人 生图 ...`
-- 回复文本后 `生图 ...`
-- 回复图片后 `改图 ...`
+- `#画图 ...`
 - 回复图片后 `反推`
 - 回复文本或图片后 `Chat ...`
 - `3K_H / 3K_V` 尺寸标记
@@ -109,9 +107,9 @@ http://<你的服务器IP>:6099/webui
 
 本项目只要求：
 
-1. `CLIProxyAPI` 对外监听一个本地端口
-2. 该端口提供 OpenAI 兼容的 `/v1/responses`
-3. 你给这个机器人分配一个可调用的本地 API Key
+1. OpenAI 兼容接口对外监听一个本地端口
+2. 该端口提供 `/v1/images/generations`，如果还要用 `反推` / `Chat` 则额外提供 `/v1/responses`
+3. 你给这个机器人分配一个可调用的 API Key
 
 一个最小 `config.yaml` 示例：
 
@@ -223,13 +221,13 @@ NAPCAT_MOUNT_OUTPUT_DIR=/app/shared-output
 ### CLIProxyAPI / OpenAI
 
 - `OPENAI_API_KEY`
-  调用 CLIProxyAPI 时使用的本地客户端 key，不是上游 provider 的原始 key
+  调用 OpenAI 兼容接口时使用的 key
 - `OPENAI_BASE_URL`
-  CLIProxyAPI 的 OpenAI 兼容入口，例如 `http://127.0.0.1:8317/v1`
+  OpenAI 兼容入口，例如 `http://127.0.0.1:8000/v1`
 - `RESPONSES_MODEL`
-  发送到 `/v1/responses` 的模型名
+  用于 `反推` / `Chat` 的文本模型名；如果后端不提供 `/v1/responses`，这两个功能不可用
 - `IMAGE_MODEL`
-  `image_generation` tool 使用的图像模型
+  发送到 `/v1/images/generations` 的图像模型名
 
 ### 生图默认参数
 
@@ -261,9 +259,7 @@ DEBUG=1 npm run start
 
 群里发送 `/help` 会看到实时帮助，当前支持：
 
-- `@bot 生图 提示词`
-- 回复文本后 `生图 提示词`
-- 回复图片后 `改图 要求`
+- `#画图 提示词`
 - 回复图片后 `反推`
 - 回复文本或图片后 `Chat 问题`
 - 在命令里带 `3K_H` 或 `3K_V`
@@ -271,15 +267,7 @@ DEBUG=1 npm run start
 示例：
 
 ```text
-@bot 生图 赛博朋克猫娘 3K_V
-```
-
-```text
-回复一段提示词后发送：生图 加一点雨夜霓虹感
-```
-
-```text
-回复一张图后发送：改图 改成吉卜力风格
+#画图 赛博朋克猫娘 3K_V
 ```
 
 ```text
@@ -289,6 +277,12 @@ DEBUG=1 npm run start
 ```text
 回复一张图后发送：Chat 这张图哪里还能优化？
 ```
+
+```text
+回复图片后发送：改图 改成吉卜力风格
+```
+
+当前图像接口默认只支持文生图，`改图` 需要后端额外提供图像编辑接口。
 
 ## 7. 已知事项
 

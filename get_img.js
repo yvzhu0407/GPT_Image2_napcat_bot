@@ -107,71 +107,25 @@ function extractImageBase64(eventName, payload) {
     return "";
 }
 
-function extractSseErrorMessage(eventName, payload) {
-    if (eventName === "error" || payload?.type === "error") {
-        const errorInfo = payload?.error || payload;
-        return errorInfo?.message || "Unknown SSE error";
-    }
-
-    if (eventName === "response.failed" || payload?.type === "response.failed") {
-        return (
-            payload?.response?.error?.message ||
-            payload?.error?.message ||
-            payload?.message ||
-            "Response failed"
-        );
-    }
-
-    return "";
-}
-
 async function requestImageGeneration(prompt, resolution = 'auto', img_edit, img_url) {
-    let input_msg = prompt
-
-    if (img_edit || img_url != '') {
-        input_msg = [
-            {
-                type: 'message', 
-                role: 'user',
-                content: [
-                    {
-                        type: 'input_text',
-                        text: prompt
-                    },
-                    {
-                        type: 'input_image',
-                        image_url: img_url
-                    }
-                ]
-            }
-        ]
+    if (img_edit || img_url) {
+        throw new Error('当前图像接口仅支持 #画图 文生图，不支持改图。')
     }
-    const response = await fetch(`${BASE_URL}/responses`, {
+
+    const response = await fetch(`${BASE_URL}/images/generations`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${apiKey}`,
             "Content-Type": "application/json",
-            Accept: "text/event-stream",
         },
         body: JSON.stringify({
-            model: RESPONSES_MODEL,
-            input: input_msg,
-            stream: true,
-            tool_choice: {
-                type: "image_generation",
-            },
-            tools: [
-                {
-                    type: "image_generation",
-                    model: IMAGE_MODEL,
-                    action: img_edit ? 'edit' : 'generate',
-                    size: resolution,
-                    quality: QUALITY,
-                    output_format: FORMAT,
-                    background: BACKGROUND,
-                    moderation: MODERATION
-                },
-            ],
+            model: IMAGE_MODEL,
+            prompt,
+            n: 1,
+            size: resolution === 'auto' ? undefined : resolution,
+            quality: QUALITY,
+            response_format: "b64_json",
+            background: BACKGROUND,
         }),
     });
 
@@ -179,61 +133,21 @@ async function requestImageGeneration(prompt, resolution = 'auto', img_edit, img
         throw new Error(`HTTP ${response.status}\n${await response.text()}`);
     }
 
-    if (!response.body) {
-        throw new Error("Response body is empty.");
+    const payload = await response.json();
+    logDebug('image generation response', payload)
+
+    const imageBase64 = payload?.data?.[0]?.b64_json || payload?.data?.[0]?.b64
+    if (typeof imageBase64 !== 'string' || imageBase64.length === 0) {
+        throw new Error('No image base64 returned from /v1/images/generations.')
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
-    let finalImageBase64 = "";
-
-    while (true) {
-        const { done, value } = await reader.read();
-
-        if (done) {
-            break;
-        }
-
-        buffer += decoder.decode(value, { stream: true });
-        const chunks = buffer.split(/\r?\n\r?\n/);
-        logDebug('raw image sse chunks', chunks)
-        buffer = chunks.pop() || "";
-
-        for (const chunk of chunks) {
-            const { eventName, data } = parseSseChunk(chunk);
-
-            if (!data) {
-                continue;
-            }
-
-            if (data === "[DONE]") {
-                return finalImageBase64;
-            }
-
-            const payload = JSON.parse(data);
-            const errorMessage = extractSseErrorMessage(eventName || payload?.type || "", payload);
-
-            if (errorMessage) {
-                throw new Error(errorMessage);
-            }
-
-            const imageBase64 = extractImageBase64(eventName || payload?.type || "", payload);
-
-            if (imageBase64) {
-                finalImageBase64 = imageBase64;
-            }
-        }
-    }
-
-    return finalImageBase64;
+    return imageBase64;
 }
 
 
 export async function gen_img(prompt, resolution = 'auto', img_edit=false, img_url='') {
     logInfo('generate image', {
         base_url: BASE_URL,
-        responses_model: RESPONSES_MODEL,
         image_model: IMAGE_MODEL,
         prompt,
         resolution,
@@ -241,10 +155,9 @@ export async function gen_img(prompt, resolution = 'auto', img_edit=false, img_u
         hasImageReference: Boolean(img_url),
         img_url: img_url || '',
     })
-    // return '/Users/Regenin/Code/oai_playground/output/generated-1776952903666.png'
     const imageBase64 = await requestImageGeneration(prompt, resolution, img_edit=img_edit, img_url=img_url);
     if (!imageBase64) {
-        throw new Error("No final image returned from /v1/responses.");
+        throw new Error("No final image returned from /v1/images/generations.");
     }
     const outputPath = resolve(OUTPUT_DIR, `generated-${Date.now()}.${FORMAT}`);
     await mkdir(dirname(outputPath), { recursive: true });
@@ -326,15 +239,14 @@ export async function chat_with_content(img_url=null, text_info=null, user_msg='
 async function main() {
     logInfo('cli generate image', {
         base_url: BASE_URL,
-        responses_model: RESPONSES_MODEL,
         image_model: IMAGE_MODEL,
         prompt: PROMPT,
     })
 
-    const imageBase64 = await requestImageGeneration();
+    const imageBase64 = await requestImageGeneration(PROMPT);
 
     if (!imageBase64) {
-        throw new Error("No final image returned from /v1/responses.");
+        throw new Error("No final image returned from /v1/images/generations.");
     }
 
     const outputPath = resolve(OUTPUT_DIR, `generated-${Date.now()}.${FORMAT}`);
