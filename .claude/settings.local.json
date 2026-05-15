@@ -7,7 +7,17 @@
       "WebFetch(domain:deepwiki.com)",
       "WebFetch(domain:www.napcat.wiki)",
       "WebFetch(domain:napneko.github.io)",
-      "Bash(python *)"
+      "Bash(python *)",
+      "WebFetch(domain:docs.astrbot.app)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "Bash(gh search:*)",
+      "Bash(python3:*)",
+      "Bash(git -C \"/Users/yvzhu/workspace/GPT_Image2_napcat_bot\" add -- \"main.py\" \"metadata.yaml\" \"_conf_schema.json\")",
+      "Bash(git -C /Users/yvzhu/workspace/GPT_Image2_napcat_bot commit -m ':*)",
+      "Bash(git -C \"/Users/yvzhu/workspace/GPT_Image2_napcat_bot\" status --short)",
+      "Bash(git:*)",
+      "Bash(curl:*)"
     ]
   }
 }

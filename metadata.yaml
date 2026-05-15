@@ -1,6 +1,6 @@
 name: gpt_image2_napcat_bot
-desc: AstrBot 画图插件，消息包含 #画图 时触发，回复图片时走编辑
-description: AstrBot 画图插件，消息包含 #画图 时触发，回复图片时走编辑
+desc: AstrBot 画图插件，消息以 #画图、画图、#生图、生图 开头时触发，回复图片时走编辑
+description: AstrBot 画图插件，消息以 #画图、画图、#生图、生图 开头时触发，回复图片时走编辑
 version: 1.1.0
 author: yvzhu
 repo: ""

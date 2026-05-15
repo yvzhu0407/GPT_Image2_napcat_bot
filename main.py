@@ -16,22 +16,22 @@ from astrbot.api.event import AstrMessageEvent, filter
 import astrbot.api.message_components as Comp
 
 
-@star.register("gpt_image2_napcat_bot", "yvzhu", "AstrBot 画图插件，消息包含 #画图 时触发，回复图片时走编辑", "1.1.0")
+@star.register("gpt_image2_napcat_bot", "yvzhu", "AstrBot 画图插件，消息以 #画图、画图、#生图、生图 开头时触发，回复图片时走编辑", "1.1.0")
 class Main(star.Star):
     def __init__(self, context: star.Context, config=None) -> None:
         super().__init__(context)
         self.context = context
         self.config = config or {}
 
-    @filter.regex(r"#画图")
+    @filter.regex(r"^(#画图|画图|#生图|生图)")
     async def draw(self, event: AstrMessageEvent):
         text = (event.message_str or "").strip()
-        if "#画图" not in text:
+        if not re.match(r"^(#画图|画图|#生图|生图)", text):
             return
 
         prompt, resolution = self._parse_prompt(text)
         if not prompt:
-            yield event.plain_result("请在 #画图 后输入提示词。")
+            yield event.plain_result("请在触发词后输入提示词。")
             return
 
         source_image_path = await self._get_replied_image_path(event)
@@ -53,8 +53,7 @@ class Main(star.Star):
             yield event.plain_result(f"图片处理失败了喵：{self._format_error(err)}")
 
     def _parse_prompt(self, text: str) -> tuple[str, str]:
-        _, _, content = text.partition("#画图")
-        content = content.strip()
+        content = re.sub(r"^(#画图|画图|#生图|生图)", "", text, count=1).strip()
         resolution = "auto"
         lowered = content.lower()
         if "3k_v" in lowered:
